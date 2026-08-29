@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PORTAL</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0a0e14; --surface: #111820; --surface2: #1a2330;
+    --border: #1e3040; --accent: #5bc8e8; --accent2: #00ff88;
+    --accent3: #ff6b6b; --text: #c8dce8; --text2: #4a7090;
+    --screen-bg: #000d14; --screen-text: #00d4ff; --screen-dim: #003355;
+    --pad: #5bc8e8; --pad-text: #001a28;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Rajdhani', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-ui); min-height: 100vh; overflow-x: hidden; transition: background .4s, color .4s; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .live-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); opacity: 0; transition: opacity .3s; }
+  .live-indicator.active { opacity: 1; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .theme-picker { display: flex; gap: 6px; align-items: center; }
+  .theme-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .15s, border-color .15s; flex-shrink: 0; }
+  .theme-dot:hover { transform: scale(1.25); }
+  .theme-dot.active { border-color: var(--text); transform: scale(1.2); }
+  .theme-label { font-family: var(--font-mono); font-size: 9px; color: var(--text2); letter-spacing: 1px; margin-right: 4px; white-space: nowrap; }
+  .btn { padding: 7px 16px; border-radius: 2px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: var(--font-mono); font-size: 11px; cursor: pointer; letter-spacing: 1px; transition: all .1s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: var(--accent); color: var(--pad-text); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .hero-screen { background: var(--screen-bg); border: 1px solid #002233; border-radius: 4px; padding: 22px 20px; text-align: center; }
+  .hero-title { font-family: var(--font-mono); font-size: clamp(28px,6vw,44px); color: var(--screen-text); letter-spacing: 6px; text-shadow: 0 0 12px var(--screen-text); }
+  .hero-sub { font-family: var(--font-mono); font-size: 11px; color: var(--screen-dim); letter-spacing: 3px; margin-top: 8px; }
+
+  .device { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; }
+  .screen-label { font-family: var(--font-mono); font-size: 11px; color: var(--screen-text); letter-spacing: 2px; }
+
+  .sites-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .site-pad { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 18px 16px; cursor: pointer; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 6px; transition: transform .12s, border-color .12s, box-shadow .12s; position: relative; overflow: hidden; }
+  .site-pad:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 4px 18px rgba(0,0,0,.35); }
+  .site-icon { font-size: 26px; line-height: 1; }
+  .site-name { font-family: var(--font-mono); font-size: 15px; letter-spacing: 2px; color: var(--accent); }
+  .site-desc { font-family: var(--font-ui); font-size: 12.5px; color: var(--text2); line-height: 1.4; }
+  .site-open { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; color: var(--accent2); margin-top: 4px; }
+
+  .stats-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: baseline; }
+  .stats-reset { font-family: var(--font-mono); font-size: 9px; color: var(--text2); letter-spacing: 1px; }
+  .stat-row { margin-bottom: 14px; }
+  .stat-row:last-child { margin-bottom: 0; }
+  .stat-label-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 5px; }
+  .stat-label-row .n { color: var(--accent); }
+  .stat-label-row .v { color: var(--accent2); }
+  .stat-track { height: 12px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+  .stat-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+  @media (max-width: 560px) {
+    .sites-grid { grid-template-columns: 1fr; }
+    .theme-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="theme-picker">
+    <span class="theme-label">THEME</span>
+    <div id="theme-dots" style="display:flex;gap:6px;align-items:center"></div>
+  </div>
+  <div class="header-right">
+    <span id="contatore" style="font-family:var(--font-mono);font-size:11px;color:var(--text2);margin-right:6px;">👁 …</span>
+    <button id="login-btn" class="btn" onclick="accedi()" style="margin-right:6px;">ACCEDI</button>
+    <span id="user-info" style="display:none;color:var(--accent2);cursor:pointer;font-family:var(--font-mono);font-size:11px;margin-right:6px;" onclick="esci()"></span>
+    <div class="live-indicator" id="live-dot" title="Live"></div>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero-screen">
+    <div class="hero-title">PORTAL</div>
+    <div class="hero-sub">SELECT A DESTINATION</div>
+  </div>
+
+  <div class="sites-grid">
+    <a class="site-pad" href="https://idk34-di.github.io/workspace/" target="_blank" rel="noopener" onclick="logClick('workspace')">
+      <span class="site-icon">🗂</span>
+      <span class="site-name">WORKSPACE</span>
+      <span class="site-desc">Personal dashboard and tools hub.</span>
+      <span class="site-open">OPEN →</span>
+    </a>
+    <a class="site-pad" href="https://idk34-di.github.io/synthesizer/" target="_blank" rel="noopener" onclick="logClick('synth')">
+      <span class="site-icon">🎛</span>
+      <span class="site-name">SYNTHESIZER</span>
+      <span class="site-desc">Pad-based music sequencer and synth.</span>
+      <span class="site-open">OPEN →</span>
+    </a>
+    <a class="site-pad" href="https://idk34-di.github.io/weather/" target="_blank" rel="noopener" onclick="logClick('weather')">
+      <span class="site-icon">☁</span>
+      <span class="site-name">WEATHER</span>
+      <span class="site-desc">Multi-model forecast, air quality, moon &amp; sea.</span>
+      <span class="site-open">OPEN →</span>
+    </a>
+    <a class="site-pad" href="https://idk34-di.github.io/codex/" target="_blank" rel="noopener" onclick="logClick('codex')">
+      <span class="site-icon">💻</span>
+      <span class="site-name">CODEX</span>
+      <span class="site-desc">Syntax-highlighting code viewer.</span>
+      <span class="site-open">OPEN →</span>
+    </a>
+  </div>
+
+  <div class="device">
+    <div class="stats-title">
+      <span>TRAFFIC THIS MONTH</span>
+      <span class="stats-reset" id="resetInfo">RESETS IN -- DAYS</span>
+    </div>
+    <div id="statsBody"></div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════ THEMES ═══════════════
+const THEMES = [
+  { name:'Cyan Night',  dot:'#5bc8e8', vars:{'--bg':'#0a0e14','--surface':'#111820','--surface2':'#1a2330','--border':'#1e3040','--accent':'#5bc8e8','--accent2':'#00ff88','--accent3':'#ff6b6b','--text':'#c8dce8','--text2':'#4a7090','--screen-bg':'#000d14','--screen-text':'#00d4ff','--screen-dim':'#003355','--pad':'#5bc8e8','--pad-text':'#001a28'}},
+  { name:'Purple Haze', dot:'#b06ef3', vars:{'--bg':'#0d0814','--surface':'#160e20','--surface2':'#1f1530','--border':'#2d1f45','--accent':'#b06ef3','--accent2':'#f06edf','--accent3':'#ff6b6b','--text':'#d8c8f0','--text2':'#5a3a80','--screen-bg':'#08040f','--screen-text':'#c87fff','--screen-dim':'#2a0a50','--pad':'#b06ef3','--pad-text':'#0d0814'}},
+  { name:'Sunset',      dot:'#ff8c42', vars:{'--bg':'#14080a','--surface':'#201010','--surface2':'#301818','--border':'#451f1f','--accent':'#ff8c42','--accent2':'#ffd166','--accent3':'#ef476f','--text':'#f0d8c8','--text2':'#804030','--screen-bg':'#0f0508','--screen-text':'#ff8c42','--screen-dim':'#500f00','--pad':'#ff8c42','--pad-text':'#14080a'}},
+  { name:'Ice',         dot:'#a8d8ea', vars:{'--bg':'#f0f6fa','--surface':'#e4eef5','--surface2':'#d0e4f0','--border':'#b0ccde','--accent':'#1e7fb5','--accent2':'#16a085','--accent3':'#e74c3c','--text':'#1a3a4a','--text2':'#5a8aaa','--screen-bg':'#0a2030','--screen-text':'#5bc8e8','--screen-dim':'#0a3050','--pad':'#1e7fb5','--pad-text':'#f0f6fa'}},
+  { name:'Matrix',      dot:'#00ff41', vars:{'--bg':'#000000','--surface':'#030f03','--surface2':'#071807','--border':'#0a280a','--accent':'#00ff41','--accent2':'#00cc33','--accent3':'#ff0000','--text':'#a0ffb0','--text2':'#1a5a1a','--screen-bg':'#000000','--screen-text':'#00ff41','--screen-dim':'#003300','--pad':'#00ff41','--pad-text':'#000000'}},
+  { name:'Pink Wave',   dot:'#ff6eb4', vars:{'--bg':'#140a12','--surface':'#201020','--surface2':'#2e1530','--border':'#4a1a45','--accent':'#ff6eb4','--accent2':'#ff9de2','--accent3':'#ff3860','--text':'#f0c8e8','--text2':'#7a3a70','--screen-bg':'#0d0510','--screen-text':'#ff6eb4','--screen-dim':'#4a0a35','--pad':'#ff6eb4','--pad-text':'#140a12'}},
+];
+let activeTheme = 0;
+function applyTheme(idx) {
+  activeTheme = idx;
+  const t = THEMES[idx];
+  for (const [k,v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k,v);
+  document.querySelectorAll('.theme-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  localStorage.setItem('portalTheme', idx);
+}
+function buildThemePicker() {
+  document.getElementById('theme-dots').innerHTML = THEMES.map((t,i) =>
+    `<div class="theme-dot${i===activeTheme?' active':''}" style="background:${t.dot}" title="${t.name}" onclick="applyTheme(${i})"></div>`
+  ).join('');
+}
+const savedTheme = parseInt(localStorage.getItem('portalTheme') || '0');
+buildThemePicker();
+applyTheme(savedTheme);
+
+function flashLive(){const d=document.getElementById('live-dot');d.classList.add('active');setTimeout(()=>d.classList.remove('active'),1500);}
+
+// ═══════════════ MONTHLY KEY / RESET ═══════════════
+function monthKey(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function daysUntilReset(){
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  return Math.ceil((nextMonth - now) / 864e5);
+}
+document.getElementById('resetInfo').textContent = 'RESETS IN ' + daysUntilReset() + ' DAYS';
+
+const SITES = [
+  { key:'workspace', label:'WORKSPACE' },
+  { key:'synth',     label:'SYNTHESIZER' },
+  { key:'weather',   label:'WEATHER' },
+  { key:'codex',     label:'CODEX' },
+];
+
+function renderStats(counts){
+  const max = Math.max(1, ...SITES.map(s => counts[s.key] || 0));
+  document.getElementById('statsBody').innerHTML = SITES.map(s => {
+    const v = counts[s.key] || 0;
+    const pct = Math.round((v / max) * 100);
+    return `<div class="stat-row">
+      <div class="stat-label-row"><span class="n">${s.label}</span><span class="v">${v} clicks</span></div>
+      <div class="stat-track"><div class="stat-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+renderStats({});
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA0-O7pTF_M_DmJ2mkvlGqkJuoD5Lc_WjE",
+  authDomain: "workspace-5e87a.firebaseapp.com",
+  projectId: "workspace-5e87a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ---- Monthly-resetting visit counter (doc id changes every month, so it starts fresh automatically) ----
+async function incrementaContatore() {
+  try {
+    const docId = "visite_hub_" + monthKey();
+    const ref = db.collection("stats").doc(docId);
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const attuale = doc.exists ? doc.data().count : 0;
+      t.set(ref, { count: attuale + 1 });
+    });
+    const doc = await ref.get();
+    document.getElementById("contatore").textContent = "👁 " + doc.data().count;
+  } catch (e) { console.error("Errore contatore:", e); }
+}
+incrementaContatore();
+flashLive();
+
+// ---- Monthly per-site click stats ----
+async function loadStats() {
+  try {
+    const mk = monthKey();
+    const counts = {};
+    await Promise.all(SITES.map(async s => {
+      const doc = await db.collection("stats").doc("click_" + s.key + "_" + mk).get();
+      counts[s.key] = doc.exists ? (doc.data().count || 0) : 0;
+    }));
+    renderStats(counts);
+  } catch (e) { console.error("Errore stats:", e); }
+}
+loadStats();
+
+function logClick(siteKey) {
+  try {
+    const ref = db.collection("stats").doc("click_" + siteKey + "_" + monthKey());
+    db.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const attuale = doc.exists ? doc.data().count : 0;
+      t.set(ref, { count: attuale + 1 });
+    }).catch(e => console.error(e));
+  } catch (e) { console.error(e); }
+  // link navigates normally, no preventDefault needed
+}
+
+function accedi() {
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => {
+    console.error("Errore login:", e);
+  });
+}
+function esci() { auth.signOut(); }
+
+auth.onAuthStateChanged((user) => {
+  document.getElementById("login-btn").style.display = user ? "none" : "";
+  document.getElementById("user-info").style.display = user ? "" : "none";
+  if (user) document.getElementById("user-info").textContent = user.displayName || user.email;
+});
+</script>
+</body>
+</html>
+© 2026 Ismaele. All rights reserved. Created: 29-08-2026 | Last Update: 29-08-2026
