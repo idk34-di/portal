@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERSION 1.0</title>
+<title>VERSION 2.0</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
 
@@ -90,25 +90,25 @@
   </div>
 
   <div class="sites-grid">
-    <a class="site-pad" href="https://idk34-di.github.io/workspace/" target="_blank" rel="noopener" onclick="logClick('workspace')">
+    <a class="site-pad" href="https://idk34-di.github.io/workspace/" target="_blank" rel="noopener">
       <span class="site-icon">🗂</span>
       <span class="site-name">WORKSPACE</span>
       <span class="site-desc">Personal dashboard and tools hub.</span>
       <span class="site-open">OPEN →</span>
     </a>
-    <a class="site-pad" href="https://idk34-di.github.io/synthesizer/" target="_blank" rel="noopener" onclick="logClick('synth')">
+    <a class="site-pad" href="https://idk34-di.github.io/synthesizer/" target="_blank" rel="noopener">
       <span class="site-icon">🎛</span>
       <span class="site-name">SYNTHESIZER</span>
       <span class="site-desc">Pad-based music sequencer and synth.</span>
       <span class="site-open">OPEN →</span>
     </a>
-    <a class="site-pad" href="https://idk34-di.github.io/weather/" target="_blank" rel="noopener" onclick="logClick('weather')">
+    <a class="site-pad" href="https://idk34-di.github.io/weather/" target="_blank" rel="noopener">
       <span class="site-icon">☁</span>
       <span class="site-name">WEATHER</span>
       <span class="site-desc">Multi-model forecast, air quality, moon &amp; sea.</span>
       <span class="site-open">OPEN →</span>
     </a>
-    <a class="site-pad" href="https://idk34-di.github.io/codex/" target="_blank" rel="noopener" onclick="logClick('codex')">
+    <a class="site-pad" href="https://idk34-di.github.io/codex/" target="_blank" rel="noopener">
       <span class="site-icon">💻</span>
       <span class="site-name">CODEX</span>
       <span class="site-desc">Syntax-highlighting code viewer.</span>
@@ -180,7 +180,7 @@ function renderStats(counts){
     const v = counts[s.key] || 0;
     const pct = Math.round((v / max) * 100);
     return `<div class="stat-row">
-      <div class="stat-label-row"><span class="n">${s.label}</span><span class="v">${v} clicks</span></div>
+      <div class="stat-label-row"><span class="n">${s.label}</span><span class="v">${v} views</span></div>
       <div class="stat-track"><div class="stat-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
@@ -218,31 +218,20 @@ async function incrementaContatore() {
 incrementaContatore();
 flashLive();
 
-// ---- Monthly per-site click stats ----
+// ---- Monthly per-site REAL traffic (reads each site's own visite_<site>_YYYY-MM counter, ----
+// the same one shown in that site's header — so it counts every visit, not just ones via the portal) ----
 async function loadStats() {
   try {
     const mk = monthKey();
     const counts = {};
     await Promise.all(SITES.map(async s => {
-      const doc = await db.collection("stats").doc("click_" + s.key + "_" + mk).get();
+      const doc = await db.collection("stats").doc("visite_" + s.key + "_" + mk).get();
       counts[s.key] = doc.exists ? (doc.data().count || 0) : 0;
     }));
     renderStats(counts);
   } catch (e) { console.error("Errore stats:", e); }
 }
 loadStats();
-
-function logClick(siteKey) {
-  try {
-    const ref = db.collection("stats").doc("click_" + siteKey + "_" + monthKey());
-    db.runTransaction(async (t) => {
-      const doc = await t.get(ref);
-      const attuale = doc.exists ? doc.data().count : 0;
-      t.set(ref, { count: attuale + 1 });
-    }).catch(e => console.error(e));
-  } catch (e) { console.error(e); }
-  // link navigates normally, no preventDefault needed
-}
 
 function accedi() {
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => {
